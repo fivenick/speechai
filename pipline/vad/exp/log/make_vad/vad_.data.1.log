@@ -1,0 +1,9 @@
+# compute-vad --config=conf/vad.conf scp:/nfs/home/yangxingya/raid0/company_task/task56_mobile_asr_vpr/vpr/pipline/vad/.data/split1/1/feats.scp ark,scp:/nfs/home/yangxingya/raid0/company_task/task56_mobile_asr_vpr/vpr/pipline/vad/./exp/vad/vad_.data.1.ark,/nfs/home/yangxingya/raid0/company_task/task56_mobile_asr_vpr/vpr/pipline/vad/./exp/vad/vad_.data.1.scp 
+# Started at Fri Aug  5 11:38:13 CST 2022
+#
+compute-vad --config=conf/vad.conf scp:/nfs/home/yangxingya/raid0/company_task/task56_mobile_asr_vpr/vpr/pipline/vad/.data/split1/1/feats.scp ark,scp:/nfs/home/yangxingya/raid0/company_task/task56_mobile_asr_vpr/vpr/pipline/vad/./exp/vad/vad_.data.1.ark,/nfs/home/yangxingya/raid0/company_task/task56_mobile_asr_vpr/vpr/pipline/vad/./exp/vad/vad_.data.1.scp 
+WARNING (compute-vad[5.5.370~2-12a65]:main():compute-vad.cc:82) No frames were judged voiced for utterance 145436_2_0_84028269_20203308518_X_000000_000000_10200
+LOG (compute-vad[5.5.370~2-12a65]:main():compute-vad.cc:95) Applied energy based voice activity detection; processed 15880 utterances successfully; 0 had empty features, and 1 were completely unvoiced.
+LOG (compute-vad[5.5.370~2-12a65]:main():compute-vad.cc:99) Proportion of voiced frames was 0.869706 over 5.01243e+06 frames.
+# Accounting: time=2 threads=1
+# Ended (code 0) at Fri Aug  5 11:38:15 CST 2022, elapsed time 2 seconds

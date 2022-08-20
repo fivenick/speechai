@@ -1,0 +1,25 @@
+nohup: ignoring input
+<class 'list'>
+compute score:   0%|          | 0/13972500 [00:00<?, ?it/s]Traceback (most recent call last):
+  File "scores.py", line 116, in <module>
+    cosine_score(trials_lst, enroll_emb_lst, verify_emb_lst, scores, n_jobs=6)
+  File "scores.py", line 68, in cosine_score
+    scores = Parallel(verbose=0)(delayed(compute_score)(trial, mod_dict, test_dict) for trial in tqdm(trials, total=len(trials),desc='compute score'))
+  File "/nfs/user/yangxingya/anaconda3/lib/python3.7/site-packages/joblib/parallel.py", line 1056, in __call__
+    self.retrieve()
+  File "/nfs/user/yangxingya/anaconda3/lib/python3.7/site-packages/joblib/parallel.py", line 935, in retrieve
+    self._output.extend(job.get(timeout=self.timeout))
+  File "/nfs/user/yangxingya/anaconda3/lib/python3.7/multiprocessing/pool.py", line 657, in get
+    raise self._value
+  File "/nfs/user/yangxingya/anaconda3/lib/python3.7/multiprocessing/pool.py", line 121, in worker
+    result = (True, func(*args, **kwds))
+  File "/nfs/user/yangxingya/anaconda3/lib/python3.7/site-packages/joblib/_parallel_backends.py", line 595, in __call__
+    return self.func(*args, **kwargs)
+  File "/nfs/user/yangxingya/anaconda3/lib/python3.7/site-packages/joblib/parallel.py", line 263, in __call__
+    for func, args, kwargs in self.items]
+  File "/nfs/user/yangxingya/anaconda3/lib/python3.7/site-packages/joblib/parallel.py", line 263, in <listcomp>
+    for func, args, kwargs in self.items]
+  File "scores.py", line 61, in compute_score
+    score = F.cosine_similarity(mod_dict[mod_id].unsqueeze(-1), test_dict[test_id].unsqueeze(-1), dim=0)
+KeyError: '130626196505124109_10132'
+compute score:   0%|          | 11/13972500 [00:03<1285:09:06,  3.02it/s]

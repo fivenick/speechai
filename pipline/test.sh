@@ -1,0 +1,1 @@
+python asr_data_preprocess.py -data_scp_path ../data/asr_data_std/test_data.scp -text_scp_path ../data/asr_data_std/test_text.scp -save_path ../data/serialize_data/asr_test_std/data -save_files_num 3 -vad -min_time 1 -max_time 9 
