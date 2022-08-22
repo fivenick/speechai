@@ -12,18 +12,24 @@ def compute_eer(trials, scores):
     '''
     @trials: a 2-dimensional list, including [[mod_id, test_id, 'target'/'nontarget'], [mod_id, test_id, 'target'/'nontarget'],......]
     @scores: a 2-dimensional list, including [[mod_id, test_id, socre], [mod_id, test_id, score],......] 
-    trials order is equal to scores order, for example, trials[index][0] = scores[index][0], trials[index][1] = scores[index][1]
     @out: a 2-dimensional list, including [eer, threshold]
     '''
-    assert len(trials) == len(scores)
+    # assert len(trials) == len(scores)
     
-    trials_len = len(trials)
+    trials_dict = {}
+    for trial in trials:
+        key = f"{trial[0]}--{trial[1]}"
+        trials_dict[key] = trial[2]
+
+    scores_len = len(scores)
     target_lst = []
     nontarget_lst = []
-    for index in range(trials_len):
-        if trials[index][2] == 'target':
+    # for index in range(trials_len):
+    for index in range(scores_len):
+        key = f"{scores[index][0]}--{scores[index][1]}"
+        if trials_dict[key] == 'target':
             target_lst.append(scores[index][2])
-        elif trials[index][2] == 'nontarget':
+        elif trials_dict[key] == 'nontarget':
             nontarget_lst.append(scores[index][2])
         else:
             raise Exception("trials the last col value must be 'target' or 'nontarget'!!!!")
@@ -51,12 +57,10 @@ def cosine_score(trials, mod_embeddings, test_embeddings, scores, n_jobs=1):
     mod_dict = {}
     test_dict = {}
     for embedding in mod_embeddings:
-        #mod_emb = [ float(val) for val in embedding[1:] ]
         mod_dict[embedding[0]] = torch.tensor(embedding[1:], dtype=torch.float32)
     for embedding in test_embeddings:
-        #test_emb = [ float(val) for val in embedding[1:] ]
         test_dict[embedding[0]] = torch.tensor(embedding[1:], dtype=torch.float32)
-    
+    ## cosine
     def compute_score(trial, mod_dict, test_dict):
         mod_id = trial[0]
         test_id = trial[1]
@@ -68,6 +72,32 @@ def cosine_score(trials, mod_embeddings, test_embeddings, scores, n_jobs=1):
             temp_scores = Parallel(verbose=0)(delayed(compute_score)(trial, mod_dict, test_dict) for trial in tqdm(trials, total=len(trials),desc='compute score'))
     else:
         temp_scores = [compute_score(trial, mod_dict, test_dict) for trial in tqdm(trials, total=len(trials), desc='compute score')]
+    scores.extend(temp_scores)
+
+def cosine_score_quick(trials, mod_embeddings, test_embeddings, scores, n_jobs=1):
+    '''
+    the parameters is the same as function cosine_score.
+    '''
+    mod_dict = {}
+    test_dict = {}
+    for embedding in mod_embeddings:
+        mod_dict[embedding[0]] = torch.tensor(embedding[1:], dtype=torch.float32)
+        mod_dict[embedding[0]] = F.normalize(mod_dict[embedding[0]], dim=0)
+    for embedding in test_embeddings:
+        test_dict[embedding[0]] = torch.tensor(embedding[1:], dtype=torch.float32)
+        test_dict[embedding[0]] = F.normalize(test_dict[embedding[0]], dim=0)
+    ## dot
+    def compute_dot_score(trial, mod_dict, test_dict):
+        mod_id = trial[0]
+        test_id = trial[1]
+        score = mod_dict[mod_id].dot(test_dict[test_id])
+        return mod_id, test_id, score.item()
+
+    if n_jobs > 1:
+        with joblib.parallel_backend('threading', n_jobs=n_jobs):
+            temp_scores = Parallel(verbose=0)(delayed(compute_dot_score)(trial, mod_dict, test_dict) for trial in tqdm(trials, total=len(trials),desc='compute score'))
+    else:
+        temp_scores = [compute_dot_score(trial, mod_dict, test_dict) for trial in tqdm(trials, total=len(trials), desc='compute score')]
     scores.extend(temp_scores)
 
 def compute_ser(labels, preds):
@@ -84,7 +114,7 @@ def compute_ser(labels, preds):
             valid += 1
     return valid / len(labels), valid, len(labels)
 
-# test
+## test
 if __name__ == '__main__':
     #enroll_emb_path = '/nfs/user/yangxingya/raid0/company_task/task-tool/ivector_xvector/kaldi_ivector_16k16bit/exp/enroll_ivec_a'
     #verify_emb_path = '/nfs/user/yangxingya/raid0/company_task/task-tool/ivector_xvector/kaldi_ivector_16k16bit/exp/verify_ivec_a'
@@ -112,21 +142,22 @@ if __name__ == '__main__':
             verify_emb_lst.append([test_id]+left)
 
     scores = []
-     
+    
     print("cosine score begin......")
     start_time = time.time()
-    cosine_score(trials_lst, enroll_emb_lst, verify_emb_lst, scores, n_jobs=14)
+    cosine_score_quick(trials_lst, enroll_emb_lst, verify_emb_lst, scores, n_jobs=14)
     end_time = time.time()
     c_time = end_time - start_time
     print(f"cosine score end, cost time: {c_time}s")
     '''
     # scores_path = "/nfs/user/yangxingya/raid0/company_task/task-tool/ivector_xvector/kaldi_ivector_16k16bit/test/exp/score/scores"
-    scores_path = "/nfs/home/yangxingya/raid0/company_task/company_git/vpr6.0/src/customized-compilation/demo-sv/exp-ivec2/scores/scores"
+    # scores_path = "/nfs/home/yangxingya/raid0/company_task/company_git/vpr6.0/src/customized-compilation/demo-sv/exp-ivec2/scores/scores"
+    scores_path = "/nfs/home/yangxingya/raid0/company_task/company_git/vpr6.0/src/customized-compilation/demo-sv/exp-xvec/scores_part"
     with open(scores_path) as ff:
             for line in ff.readlines():
                 mod_id, utt_id, score = line.strip().split()
                 scores.append([mod_id, utt_id, float(score)])
-    '''         
+    '''        
     print("compute eer begin......")
     start_time = time.time()
     eer,threshold = compute_eer(trials_lst, scores)
